@@ -4,11 +4,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'get.dart';
-
 Future<Album> createAlbum(String name) async {
   final response = await http.post(
-    Uri.parse('http://custompythonapi.pythonanywhere.com/category/add'),
+    Uri.parse('https://custompythonapi.pythonanywhere.com/api/category/add'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -77,33 +75,47 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Create Data Example'),
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(hintText: 'Enter Title'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _futureAlbum = createAlbum(_controller.text);
-                });
-                _futureAlbum!.then((album) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyAppGet()),
-                  );
-                }).catchError((error) {
-                  // Handle error if necessary
-                  print('Error creating album: $error');
-                });
-              },
-              child: const Text('Create Data'),
-            ),
-          ],
+        body: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(8),
+          child: (_futureAlbum == null) ? buildColumn() : buildFutureBuilder(),
         ),
       ),
+    );
+  }
+
+  Column buildColumn() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        TextField(
+          controller: _controller,
+          decoration: const InputDecoration(hintText: 'Enter Title'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _futureAlbum = createAlbum(_controller.text);
+            });
+          },
+          child: const Text('Create Data'),
+        ),
+      ],
+    );
+  }
+
+  FutureBuilder<Album> buildFutureBuilder() {
+    return FutureBuilder<Album>(
+      future: _futureAlbum,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Text(snapshot.data!.name);
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+
+        return const CircularProgressIndicator();
+      },
     );
   }
 }

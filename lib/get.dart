@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 Future<List<Album>> fetchAlbums() async {
   final response =
-  await http.get(Uri.parse('https://api.escuelajs.co/api/v1/categories'));
+      await http.get(Uri.parse('https://api.escuelajs.co/api/v1/categories'));
 
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
@@ -29,10 +29,10 @@ class Album {
 
   const Album(
       {required this.id,
-        required this.name,
-        required this.imageUrl,
-        required this.creationAt,
-        required this.updatedAt});
+      required this.name,
+      required this.imageUrl,
+      required this.creationAt,
+      required this.updatedAt});
 
   factory Album.fromJson(Map<String, dynamic> json) {
     return Album(
@@ -44,16 +44,16 @@ class Album {
   }
 }
 
-void main() => runApp(const MyApp());
+void main() => runApp(const MyAppGet());
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class MyAppGet extends StatefulWidget {
+  const MyAppGet({Key? key}) : super(key: key);
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyAppGet> createState() => _MyAppGetState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppGetState extends State<MyAppGet> {
   late Future<List<Album>> futureAlbums;
 
   @override

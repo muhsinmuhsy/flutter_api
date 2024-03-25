@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 Future<Album> createAlbum(String name) async {
   final response = await http.post(
-    Uri.parse('https://custompythonapi.pythonanywhere.com/api/category/add'),
+    Uri.parse('http://custompythonapi.pythonanywhere.com/category/add'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -33,17 +33,10 @@ class Album {
   const Album({required this.id, required this.name});
 
   factory Album.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'id': int id,
-        'name': String name,
-      } =>
-        Album(
-          id: id,
-          name: name,
-        ),
-      _ => throw const FormatException('Failed to load album.'),
-    };
+    return Album(
+      id: json['id'] as int,
+      name: json['name'] as String,
+    );
   }
 }
 
@@ -51,18 +44,8 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() {
-    return _MyAppState();
-  }
-}
-
-class _MyAppState extends State<MyApp> {
-  final TextEditingController _controller = TextEditingController();
-  Future<Album>? _futureAlbum;
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -71,51 +54,69 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Create Data Example'),
-        ),
-        body: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(8),
-          child: (_futureAlbum == null) ? buildColumn() : buildFutureBuilder(),
-        ),
+      home: const CreateDataPage(),
+      routes: {
+        '/get': (context) => GetDataPage(),
+      },
+    );
+  }
+}
+
+class CreateDataPage extends StatefulWidget {
+  const CreateDataPage({Key? key}) : super(key: key);
+
+  @override
+  _CreateDataPageState createState() => _CreateDataPageState();
+}
+
+class _CreateDataPageState extends State<CreateDataPage> {
+  final TextEditingController _controller = TextEditingController();
+  Future<Album>? _futureAlbum;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Create Data Example'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          TextField(
+            controller: _controller,
+            decoration: const InputDecoration(hintText: 'Enter Title'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final futureAlbum = createAlbum(_controller.text);
+              setState(() {
+                _futureAlbum = futureAlbum;
+              });
+              final album = await futureAlbum;
+              if (album != null) {
+                Navigator.pushNamed(context, '/get');
+              }
+            },
+            child: const Text('Create Data'),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Column buildColumn() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        TextField(
-          controller: _controller,
-          decoration: const InputDecoration(hintText: 'Enter Title'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              _futureAlbum = createAlbum(_controller.text);
-            });
-          },
-          child: const Text('Create Data'),
-        ),
-      ],
-    );
-  }
+class GetDataPage extends StatelessWidget {
+  const GetDataPage({Key? key}) : super(key: key);
 
-  FutureBuilder<Album> buildFutureBuilder() {
-    return FutureBuilder<Album>(
-      future: _futureAlbum,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Text(snapshot.data!.name);
-        } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
-        }
-
-        return const CircularProgressIndicator();
-      },
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Get Data Page'),
+      ),
+      body: Center(
+        child: const Text('This is the Get Data Page'),
+      ),
     );
   }
 }
